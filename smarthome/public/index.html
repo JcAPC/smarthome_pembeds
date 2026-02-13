@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Home Control</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+        h3 { margin-top: 0; color: #1a73e8; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { flex: 1; padding: 10px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; }
+        .on { background: #28a745; } .off { background: #dc3545; }
+        input[type=range] { width: 100%; }
+        .status { font-size: 0.8em; color: #666; margin-top: 10px; }
+        .history-section { width: 100%; max-width: 1000px; margin-top: 40px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <h2>Smart Home Dashboard</h2>
+    <div class="grid" id="ui-grid">
+        <div class="card">
+            <h3>⚙️ DC Motor</h3>
+            <div class="btn-group">
+                <button class="on" onclick="send('motor', 'state', 1)">START</button>
+                <button class="off" onclick="send('motor', 'state', 0)">STOP</button>
+            </div>
+            <label>Speed</label>
+            <input type="range" min="0" max="255" value="0" onchange="send('motor', 'speed', this.value)">
+            <div id="motor-status" class="status">Ready</div>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <h3>📝 Recent Logs</h3>
+        <table>
+            <thead><tr><th>Device</th><th>Action</th><th>Value</th><th>Time</th></tr></thead>
+            <tbody id="history-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        var grid = document.getElementById('ui-grid');
+        for (var i = 1; i <= 5; i++) {
+            var ledId = "led" + i;
+            grid.innerHTML += '<div class="card">' +
+                '<h3>💡 LED ' + i + '</h3>' +
+                '<div class="btn-group">' +
+                    '<button class="on" onclick="send(\''+ledId+'\', \'state\', 1)">ON</button>' +
+                    '<button class="off" onclick="send(\''+ledId+'\', \'state\', 0)">OFF</button>' +
+                '</div>' +
+                '<label>Brightness</label>' +
+                '<input type="range" min="0" max="255" value="127" onchange="send(\''+ledId+'\', \'brightness\', this.value)">' +
+                '<div id="'+ledId+'-status" class="status">Ready</div>' +
+            '</div>';
+        }
+
+        async function send(device, action, value) {
+            document.getElementById(device + "-status").innerText = "Sending...";
+            try {
+                await fetch("/control?device=" + device + "&action=" + action + "&value=" + value);
+                document.getElementById(device + "-status").innerText = "Sent: " + value;
+                updateHistory();
+            } catch (e) { document.getElementById(device + "-status").innerText = "Error"; }
+        }
+
+        async function updateHistory() {
+            const res = await fetch('/history');
+            const data = await res.json();
+            const tbody = document.getElementById('history-body');
+            tbody.innerHTML = data.map(log => `<tr><td>${log.device}</td><td>${log.action}</td><td>${log.value}</td><td>${new Date(log.timestamp).toLocaleTimeString()}</td></tr>`).join('');
+        }
+        setInterval(updateHistory, 3000);
+        updateHistory();
+    </script>
+</body>
+</html>

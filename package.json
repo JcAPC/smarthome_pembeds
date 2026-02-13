@@ -1,0 +1,26 @@
+{
+  "name": "smarthome_pembeds",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JcAPC/smarthome_pembeds.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/JcAPC/smarthome_pembeds/issues"
+  },
+  "homepage": "https://github.com/JcAPC/smarthome_pembeds#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "serialport": "^13.0.0",
+    "sqlite3": "^5.1.7"
+  }
+}
